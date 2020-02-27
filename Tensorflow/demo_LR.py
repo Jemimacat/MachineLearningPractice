@@ -12,15 +12,29 @@ def linear_regression():
   error = tf.reduce_mean(tf.square(y_predict - y_true))
   ## 4) optimize loss
   optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(error)
+  ## 2_ collect variables
+  tf.summary.scalar("error",error)
+  tf.summary.histogram("weights",weights)
+  tf.summary.histogram("bias",bias)
+  ## 3_ merge variables
+  merged = tf.summary.merge_all()
   ## 5) initialize variables
   init = tf.global_variables_initializer()
-  ## 5) open a session
+  ## 6) open a session
   with tf.Session() as sess:
     sess.run(init)
     print("brefore: weights %f and bias %f, loss %f." % (weights.eval(), bias.eval(), error.eval()))
+    ## 1_create event file
+    file_writer = tf.summary.FileWriter('./temp/linear',graph=sess.graph)
+    
     for i in range(1000):
       sess.run(optimizer)
       print("No. %d after: weights %f and bias %f, loss %f." % (i, weights.eval(), bias.eval(), error.eval()))
+      ## 4_ run merginng variables
+      summary = sess.run(merged)
+      ## 5_ write on event file
+      file_writer.add_summary(summary,i)
+
   return None
 
 if __name__ == "__main__":
